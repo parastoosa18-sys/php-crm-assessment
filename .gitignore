@@ -1,0 +1,7 @@
+/.env
+/vendor/
+/.phpunit.result.cache
+/.idea/
+/.vscode/
+/REVIEW_GUIDE.private.md
+

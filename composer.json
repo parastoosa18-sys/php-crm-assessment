@@ -1,0 +1,40 @@
+{
+  "name": "example/php-crm-assessment",
+  "description": "Clean-room PHP hiring assessment starter",
+  "type": "project",
+  "license": "proprietary",
+  "require": {
+    "php": "^7.4",
+    "ext-pdo": "*",
+    "twig/twig": "^3.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "Assessment\\": "app/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Assessment\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": "phpunit -c phpunit.xml",
+    "migrate": "php bin/console.php migrate",
+    "seed": "php bin/console.php seed",
+    "setup": [
+      "@migrate",
+      "@seed"
+    ]
+  },
+  "config": {
+    "sort-packages": true,
+    "platform": {
+      "php": "7.4.33"
+    }
+  }
+}
+

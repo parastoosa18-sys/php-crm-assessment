@@ -1,0 +1,46 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    working_dir: /var/www
+    command: php -S 0.0.0.0:8080 -t public public/router.php
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    volumes:
+      - ./:/var/www
+      - vendor-data:/var/www/vendor
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      APP_DEBUG: ${APP_DEBUG:-true}
+      DB_HOST: ${DB_HOST:-db}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_DATABASE: ${DB_DATABASE:-assessment}
+      DB_USERNAME: ${DB_USERNAME:-assessment}
+      DB_PASSWORD: ${DB_PASSWORD:-assessment}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-assessment}
+      MYSQL_USER: ${DB_USERNAME:-assessment}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-assessment}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root-secret}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_ROOT_PASSWORD:-root-secret}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+volumes:
+  mysql-data:
+  vendor-data:
+

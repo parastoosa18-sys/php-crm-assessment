@@ -1,0 +1,16 @@
+{% extends "layout.twig" %}
+
+{% block content %}
+    <p class="eyebrow">Hiring exercise</p>
+    <h1>Customer Follow-up Assessment</h1>
+    <p>The starter is running. Read <code>README.md</code> and <code>ASSIGNMENT.md</code> before implementing the feature.</p>
+    <div class="card">
+        <strong>Health check</strong>
+        <code>GET /health</code>
+    </div>
+    <div class="card">
+        <strong>Visible customers</strong>
+        <code>GET /api/customers</code> with header <code>X-User-Id: 1</code>
+    </div>
+{% endblock %}
+
