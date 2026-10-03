@@ -33,7 +33,11 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD:-assessment}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root-secret}
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_ROOT_PASSWORD:-root-secret}"]
+      test:
+        [
+          "CMD-SHELL",
+          "mysql -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD $$MYSQL_DATABASE -e 'SELECT 1' >/dev/null 2>&1",
+        ]
       interval: 5s
       timeout: 3s
       retries: 20
