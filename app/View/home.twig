@@ -1,16 +1,115 @@
+
 {% extends "layout.twig" %}
 
 {% block content %}
-    <p class="eyebrow">Hiring exercise</p>
-    <h1>Customer Follow-up Assessment</h1>
-    <p>The starter is running. Read <code>README.md</code> and <code>ASSIGNMENT.md</code> before implementing the feature.</p>
-    <div class="card">
-        <strong>Health check</strong>
-        <code>GET /health</code>
-    </div>
-    <div class="card">
-        <strong>Visible customers</strong>
-        <code>GET /api/customers</code> with header <code>X-User-Id: 1</code>
-    </div>
-{% endblock %}
+<div class="followup-page" dir="rtl">
+    <header class="page-header">
+        <div>
+            <p class="eyebrow">پنل مدیریت CRM</p>
+            <h1>مدیریت پیگیری مشتریان</h1>
+            <p class="subtitle">ثبت، مشاهده و مدیریت پیگیری‌های مشتریان</p>
+        </div>
+    </header>
 
+    <section class="stats">
+        <div class="stat-card">
+            <span>کل پیگیری‌ها</span>
+            <strong id="totalCount">۰</strong>
+        </div>
+        <div class="stat-card">
+            <span>پیگیری‌های باز</span>
+            <strong id="openCount">۰</strong>
+        </div>
+        <div class="stat-card">
+            <span>تکمیل‌شده</span>
+            <strong id="completedCount">۰</strong>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>ثبت پیگیری جدید</h2>
+
+        <form id="followupForm">
+            <div class="form-grid">
+                <label>
+                    شناسه مشتری
+                    <input type="number" name="customer_id"
+                           min="1" required placeholder="مثلاً ۱">
+                </label>
+
+                <label>
+                    عنوان پیگیری
+                    <input type="text" name="title"
+                           maxlength="200" required
+                           placeholder="عنوان پیگیری را وارد کنید">
+                </label>
+
+                <label>
+                    اولویت
+                    <select name="priority">
+                        <option value="normal">عادی</option>
+                        <option value="high">زیاد</option>
+                        <option value="low">کم</option>
+                    </select>
+                </label>
+
+                <label>
+                    زمان پیگیری
+                    <input type="datetime-local" name="due_at" required>
+                </label>
+
+                <label class="full-width">
+                    توضیحات
+                    <textarea name="description" rows="3"
+                              placeholder="توضیحات پیگیری..."></textarea>
+                </label>
+            </div>
+
+<div class="form-actions">
+    <button type="submit" class="primary-button" id="submitButton">
+        ثبت پیگیری
+    </button>
+
+    <button type="button" class="secondary-button"
+            id="cancelEditButton" hidden>
+        لغو ویرایش
+    </button>
+</div>
+
+            <p id="formMessage" role="status"></p>
+        </form>
+    </section>
+
+    <section class="panel">
+        <div class="list-header">
+            <h2>فهرست پیگیری‌ها</h2>
+            <button type="button" id="refreshButton" class="secondary-button">
+                بروزرسانی فهرست
+            </button>
+        </div>
+
+        <div id="listMessage" role="status">در حال آماده‌سازی فهرست...</div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>شناسه</th>
+                        <th>مشتری</th>
+                        <th>عنوان</th>
+                        <th>اولویت</th>
+                        <th>وضعیت</th>
+                        <th>موعد پیگیری</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody id="followupRows">
+                    <tr>
+                        <td colspan="7">فهرست در حال بارگذاری است.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}

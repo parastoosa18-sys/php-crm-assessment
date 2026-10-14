@@ -1,14 +1,229 @@
+
 :root {
     color-scheme: light;
-    font-family: system-ui, sans-serif;
+    font-family: Tahoma, Arial, sans-serif;
     color: #172033;
     background: #f4f7fb;
 }
 
-body { margin: 0; }
-.container { max-width: 760px; margin: 80px auto; padding: 0 24px; }
-.eyebrow { color: #5865f2; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
-h1 { font-size: clamp(2rem, 6vw, 4rem); line-height: 1; }
-.card { background: #fff; border: 1px solid #dce3ee; border-radius: 12px; padding: 18px; margin-top: 16px; display: grid; gap: 8px; }
-code { color: #3140c8; }
+* {
+    box-sizing: border-box;
+}
 
+body {
+    margin: 0;
+    direction: rtl;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 35px auto;
+    padding: 0 22px;
+}
+
+.followup-page {
+    display: grid;
+    gap: 24px;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #263a83, #5865f2);
+    color: #fff;
+    padding: 30px;
+    border-radius: 18px;
+}
+
+.page-header h1 {
+    font-size: clamp(25px, 4vw, 36px);
+    line-height: 1.5;
+    margin: 10px 0;
+}
+
+.page-header .eyebrow {
+    color: #dce3ff;
+    font-size: 13px;
+}
+
+.subtitle {
+    color: #e5e9ff;
+    margin-bottom: 0;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.stat-card,
+.panel {
+    background: #fff;
+    border: 1px solid #e1e7f0;
+    border-radius: 14px;
+    padding: 22px;
+    box-shadow: 0 4px 16px rgba(30, 50, 90, .04);
+}
+
+.stat-card {
+    display: grid;
+    gap: 12px;
+}
+
+.stat-card span {
+    color: #68758a;
+    font-size: 14px;
+}
+
+.stat-card strong {
+    color: #3548c5;
+    font-size: 30px;
+}
+
+.panel h2 {
+    margin: 0 0 22px;
+    font-size: 20px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.form-grid label {
+    display: grid;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d7deea;
+    border-radius: 9px;
+    background: #fff;
+    font: inherit;
+    color: #172033;
+    outline: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #5865f2;
+    box-shadow: 0 0 0 3px rgba(88, 101, 242, .12);
+}
+
+textarea {
+    resize: vertical;
+}
+
+button {
+    border: 0;
+    border-radius: 9px;
+    padding: 11px 18px;
+    font: inherit;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.primary-button {
+    margin-top: 20px;
+    background: #4f5de8;
+    color: #fff;
+}
+
+.primary-button:hover {
+    background: #3544ce;
+}
+
+.secondary-button {
+    background: #eef0ff;
+    color: #3548c5;
+}
+
+button:hover {
+    filter: brightness(.96);
+}
+
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.list-header h2 {
+    margin: 0;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 720px;
+}
+
+th,
+td {
+    padding: 14px 12px;
+    text-align: right;
+    border-bottom: 1px solid #edf0f5;
+    font-size: 14px;
+}
+
+th {
+    background: #f7f8fc;
+    color: #566178;
+    font-weight: 700;
+}
+
+tbody tr:hover {
+    background: #fafbff;
+}
+
+#formMessage,
+#listMessage {
+    color: #596579;
+    font-size: 14px;
+}
+
+@media (max-width: 650px) {
+    .container {
+        margin: 18px auto;
+        padding: 0 12px;
+    }
+
+    .page-header,
+    .panel {
+        padding: 18px;
+    }
+
+    .stats {
+        grid-template-columns: 1fr;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .full-width {
+        grid-column: auto;
+    }
+
+    .list-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

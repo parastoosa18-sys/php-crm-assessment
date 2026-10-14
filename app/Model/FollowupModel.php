@@ -224,33 +224,57 @@ final class FollowupModel
             throw $exception;
         }
     }
+    
+public function updateOpen(int $id, array $data, array $user): bool
+{
+    list($visibilitySql, $params) =
+        $this->visibilityCondition($user);
 
-    public function updateOpen(int $id, array $data, array $user): bool
-    {
-        list($visibilitySql, $params) =
-            $this->visibilityCondition($user);
+    $sql = 'UPDATE followups AS f
+            SET title = :title,
+                description = :description,
+                priority = :priority,
+                due_at = :due_at
+            WHERE f.id = :id
+              AND f.status = :open_status'
+        . $visibilitySql;
 
-        $sql = 'UPDATE followups f
-                SET f.title = :title,
-                    f.description = :description,
-                    f.priority = :priority,
-                    f.due_at = :due_at
-                WHERE f.id = :id
-                  AND f.status = :open_status'
-            . $visibilitySql;
+    $params['title'] = $data['title'];
+    $params['description'] = $data['description'] ?? null;
+    $params['priority'] = $data['priority'];
+    $params['due_at'] = $data['due_at'];
+    $params['id'] = $id;
+    $params['open_status'] = 'open';
 
-        $params['title'] = $data['title'];
-        $params['description'] = $data['description'] ?? null;
-        $params['priority'] = $data['priority'];
-        $params['due_at'] = $data['due_at'];
-        $params['id'] = $id;
-        $params['open_status'] = 'open';
+    $statement = $this->db->prepare($sql);
+    $statement->execute($params);
 
-        $statement = $this->db->prepare($sql);
-        $statement->execute($params);
-
-        return $statement->rowCount() > 0;
+    if ($statement->rowCount() > 0) {
+        return true;
     }
+
+    // اگر اطلاعات تغییری نکرده باشند، بررسی می‌کنیم
+    // که پیگیری همچنان وجود دارد، باز است و قابل مشاهده است.
+    $checkSql = 'SELECT f.id
+                 FROM followups f
+                 WHERE f.id = :id
+                   AND f.status = :open_status'
+        . $visibilitySql;
+
+    $checkParams = $params;
+    unset(
+        $checkParams['title'],
+        $checkParams['description'],
+        $checkParams['priority'],
+        $checkParams['due_at']
+    );
+
+    $check = $this->db->prepare($checkSql);
+    $check->execute($checkParams);
+
+    return $check->fetchColumn() !== false;
+}
+
 
     public function changeStatus(
         int $id,

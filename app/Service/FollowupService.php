@@ -115,36 +115,40 @@ final class FollowupService
 
         return $this->get($id, $user);
     }
+    
+    public function update(int $id, array $body, array $user): array
+    {
+        $current = $this->get($id, $user);
 
-public function update(int $id, array $body, array $user): array
-{
-    $current = $this->get($id, $user);
-
-    if ($current['status'] !== 'open') {
-        throw new HttpException(409, 'Only open follow-ups can be edited.');
-    }
-
-    if (!array_key_exists('customer_id', $body)) {
-        $body['customer_id'] = (int) $current['customer_id'];
-    } elseif ((int) $body['customer_id'] !== (int) $current['customer_id']) {
-        throw new HttpException(422, 'Changing the customer is not allowed.');
-    }
-
-    $data = $this->validatedData($body);
-
-    if (!$this->model->updateOpen($id, $data, $user)) {
-        $latest = $this->get($id, $user);
-
-        if ($latest['status'] !== 'open') {
+        if ($current['status'] !== 'open') {
             throw new HttpException(409, 'Only open follow-ups can be edited.');
         }
 
-        throw new HttpException(404, 'Follow-up not found.');
+        if (!array_key_exists('customer_id', $body)) {
+            $body['customer_id'] = (int) $current['customer_id'];
+        } elseif (
+            !is_numeric($body['customer_id'])
+            || (int) $body['customer_id'] !== (int) $current['customer_id']
+        ) {
+            throw new HttpException(422, 'Changing the customer is not allowed.');
+        }
+
+        $data = $this->validatedData($body);
+
+        if (!$this->followups->updateOpen($id, $data, $user)) {
+            $latest = $this->get($id, $user);
+
+            if ($latest['status'] !== 'open') {
+                throw new HttpException(409, 'Only open follow-ups can be edited.');
+            }
+
+            throw new HttpException(404, 'Follow-up not found.');
+        }
+
+        return $this->get($id, $user);
     }
 
-    return $this->get($id, $user);
-}
-
+       
 
     public function complete(int $id, array $user): array
     {
