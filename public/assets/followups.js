@@ -1,9 +1,16 @@
 
 const API_URL = '/api/followups';
-const USER_ID = '1';
+
+const currentUserSelect = document.getElementById('currentUser');
+let USER_ID = currentUserSelect
+    ? currentUserSelect.value
+    : '1';
 
 const form = document.getElementById('followupForm');
 let editingId = null;
+let currentPage = 1;
+const pageSize = 5;
+let totalPages = 1;
 const submitButton = document.getElementById('submitButton');
 const cancelEditButton = document.getElementById('cancelEditButton');
 
@@ -52,13 +59,71 @@ function priorityLabel(priority) {
     })[priority] || priority;
 }
 
+function formatPersianDateTime(value) {
+    if (!value || value === '—') return '—';
+
+    const match = String(value).match(
+        /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?$/
+    );
+
+    if (!match) return toPersian(value);
+
+    const [, year, month, day, hour = '00', minute = '00'] = match;
+
+    const date = new Date(
+        Number(year),
+        Number(month) - 1,
+        Number(day),
+        Number(hour),
+        Number(minute)
+    );
+
+    return new Intl.DateTimeFormat('fa-IR-u-ca-persian-nu-arabext', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).format(date) + ' - ' +
+        new Intl.NumberFormat('fa-IR-u-nu-arabext', {
+            minimumIntegerDigits: 2,
+            useGrouping: false
+        }).format(Number(hour)) + ':' +
+        new Intl.NumberFormat('fa-IR-u-nu-arabext', {
+            minimumIntegerDigits: 2,
+            useGrouping: false
+        }).format(Number(minute));
+}
+
 async function loadFollowups() {
     listMessage.textContent = 'در حال دریافت اطلاعات...';
     rows.replaceChildren();
 
     try {
-        const result = await apiRequest(API_URL);
+      const params = new URLSearchParams({
+    limit: pageSize,
+    offset: (currentPage - 1) * pageSize
+});
+
+const title = document.getElementById('filterTitle').value.trim();
+const priority = document.getElementById('filterPriority').value;
+const status = document.getElementById('filterStatus').value;
+
+if (title) params.set('title', title);
+if (priority) params.set('priority', priority);
+if (status) params.set('status', status);
+
+const url = `${API_URL}?${params.toString()}`;
+const result = await apiRequest(url);
+       console.log('Pagination result:', result);
         const items = Array.isArray(result) ? result : (result.data || []);
+        const total = result.pagination?.total ?? items.length;
+
+        totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+        document.getElementById('pageInfo').textContent =
+        `صفحه ${currentPage} از ${totalPages}`;
+
+        document.getElementById('prevPage').disabled = currentPage <= 1;
+        document.getElementById('nextPage').disabled = currentPage >= totalPages;
 
         document.getElementById('totalCount').textContent = items.length;
         document.getElementById('openCount').textContent =
@@ -83,7 +148,7 @@ async function loadFollowups() {
                 <td>${toPersian(item.title)}</td>
                 <td>${toPersian(priorityLabel(item.priority))}</td>
                 <td>${toPersian(statusLabel(item.status))}</td>
-                <td>${toPersian(item.due_at || '—')}</td>
+                <td>${formatPersianDateTime(item.due_at)}</td>
                 <td>
                     <button type="button" class="secondary-button"
                         data-action="${action}" data-id="${Number(item.id)}">
@@ -97,7 +162,7 @@ async function loadFollowups() {
     ` : ''}
                 </td>
             `;
-            
+
             rows.appendChild(tr);
         });
 
@@ -161,6 +226,7 @@ cancelEditButton.addEventListener('click', () => {
     formMessage.textContent = 'ویرایش لغو شد.';
 });
 
+
 rows.addEventListener('click', async event => {
     const button = event.target.closest('button[data-action]');
     if (!button) return;
@@ -206,5 +272,87 @@ rows.addEventListener('click', async event => {
 });
 
 document.getElementById('refreshButton').addEventListener('click', loadFollowups);
+document.getElementById('prevPage').addEventListener('click', async () => {
+    if (currentPage > 1) {
+        currentPage--;
+        await loadFollowups();
+    }
+});
+
+document.getElementById('nextPage').addEventListener('click', async () => {
+    if (currentPage < totalPages) {
+        currentPage++;
+        await loadFollowups();
+    }
+});
+
+const filterModal = document.getElementById('filterModal');
+
+document.getElementById('openFilterButton').addEventListener('click', () => {
+    filterModal.hidden = false;
+});
+
+document.getElementById('closeFilterButton').addEventListener('click', () => {
+    filterModal.hidden = true;
+});
+
+document.getElementById('applyFilters').addEventListener('click', async () => {
+    currentPage = 1;
+    filterModal.hidden = true;
+    await loadFollowups();
+});
+
+document.getElementById('clearFilters').addEventListener('click', async () => {
+    document.getElementById('filterTitle').value = '';
+    document.getElementById('filterPriority').value = '';
+    document.getElementById('filterStatus').value = '';
+
+    currentPage = 1;
+    filterModal.hidden = true;
+    await loadFollowups();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const hiddenInput = document.getElementById('due_at');
+
+    if (!hiddenInput || typeof AzarDatepicker === 'undefined') {
+        console.error('تقویم شمسی بارگذاری نشده است.');
+        return;
+    }
+
+    new AzarDatepicker({
+        selector: '#dueAtPicker',
+        calendar: 'jalali',
+        mode: 'datetime',
+        inputFormat: 'YYYY/MM/DD HH:mm',
+        placeholder: 'انتخاب تاریخ و ساعت شمسی',
+        rtl: true,
+
+        onChange: function (data) {
+            if (!data.nativeDate) return;
+
+            const date = data.nativeDate;
+            const pad = number => String(number).padStart(2, '0');
+
+            hiddenInput.value =
+                `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
+                `${pad(date.getHours())}:${pad(date.getMinutes())}:00`;
+        },
+
+        onClear: function () {
+            hiddenInput.value = '';
+        }
+    });
+});
+
+if (currentUserSelect) {
+    currentUserSelect.addEventListener('change', async function () {
+        USER_ID = currentUserSelect.value;
+        currentPage = 1;
+
+        await loadFollowups();
+    });
+}
+
 
 loadFollowups();
