@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Assessment\Core\Database;
+
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 $command = $argv[1] ?? 'help';
@@ -17,32 +18,88 @@ if ($command === 'migrate') {
         ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
     );
 
-    $applied = $db->query('SELECT migration FROM migrations')->fetchAll(\PDO::FETCH_COLUMN);
-    foreach (glob(dirname(__DIR__) . '/database/migrations/*.php') ?: array() as $file) {
-        $name = basename($file);
-        if (in_array($name, $applied, true)) {
+    require_once dirname(__DIR__) . '/database/migrations/Migration.php';
+
+    $migrationClasses = array(
+        '001_create_users_and_customers.php' => 'CreateUsersAndCustomers',
+        '002_create_followups.php' => 'CreateFollowups',
+    );
+
+    $applied = $db->query(
+        'SELECT migration FROM migrations'
+    )->fetchAll(\PDO::FETCH_COLUMN);
+
+    foreach ($migrationClasses as $fileName => $className) {
+        if (in_array($fileName, $applied, true)) {
             continue;
         }
 
-        // MySQL implicitly commits DDL statements, so migrations are recorded
-        // only after their callable completes successfully.
-        $migration = require $file;
-        $migration($db);
-        $statement = $db->prepare('INSERT INTO migrations (migration) VALUES (:migration)');
-        $statement->execute(array('migration' => $name));
-        echo "Migrated: {$name}\n";
+        $file = dirname(__DIR__) . '/database/migrations/' . $fileName;
+
+        if (!is_file($file)) {
+            throw new RuntimeException(
+                'Migration file not found: ' . $fileName
+            );
+        }
+
+        require_once $file;
+
+        if (!class_exists($className)) {
+            throw new RuntimeException(
+                'Migration class not found: ' . $className
+            );
+        }
+
+        $migration = new $className();
+        $migration->up($db);
+
+        $statement = $db->prepare(
+            'INSERT INTO migrations (migration) VALUES (:migration)'
+        );
+
+        $statement->execute(array(
+            'migration' => $fileName,
+        ));
+
+        echo "Migrated: {$fileName}\n";
     }
+
     exit(0);
 }
+
 
 if ($command === 'seed') {
-    foreach (glob(dirname(__DIR__) . '/database/seeds/*.php') ?: array() as $file) {
-        $seed = require $file;
-        $seed($db);
-        echo 'Seeded: ' . basename($file) . "\n";
+    require_once dirname(__DIR__) . '/database/seeds/Seeder.php';
+
+    $seeders = array(
+        '001_demo_data.php' => 'DemoDataSeeder',
+    );
+
+    foreach ($seeders as $fileName => $className) {
+        $file = dirname(__DIR__) . '/database/seeds/' . $fileName;
+
+        if (!is_file($file)) {
+            throw new RuntimeException(
+                'Seeder file not found: ' . $fileName
+            );
+        }
+
+        require_once $file;
+
+        if (!class_exists($className)) {
+            throw new RuntimeException(
+                'Seeder class not found: ' . $className
+            );
+        }
+
+        $seeder = new $className();
+        $seeder->run($db);
+
+        echo 'Seeded: ' . $fileName . "\n";
     }
+
     exit(0);
 }
 
-echo "Usage:\n  php bin/console.php migrate\n  php bin/console.php seed\n";
 
+echo "Usage:\n  php bin/console.php migrate\n  php bin/console.php seed\n";

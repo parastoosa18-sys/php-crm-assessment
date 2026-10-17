@@ -6,6 +6,15 @@
     <header class="page-header">
         <div>
             <p class="eyebrow">پنل مدیریت CRM</p>
+              <div class="user-switcher" dir="rtl">
+    <label for="currentUser">ورود:</label>
+
+    <select id="currentUser">
+        <option value="1">ادمین</option>
+        <option value="2">کاربر ۲</option>
+        <option value="3">کاربر ۳</option>
+    </select>
+</div>
             <h1>مدیریت پیگیری مشتریان</h1>
             <p class="subtitle">ثبت، مشاهده و مدیریت پیگیری‌های مشتریان</p>
         </div>
@@ -55,7 +64,18 @@
 
                 <label>
                     زمان پیگیری
-                    <input type="datetime-local" name="due_at" required>
+                    <input
+                     type="text"
+                     id="dueAtPicker"
+                     placeholder="انتخاب تاریخ و ساعت شمسی"
+                     autocomplete="off"
+                     readonly
+                      required
+                >
+
+                <input type="hidden" name="due_at" id="due_at">
+
+
                 </label>
 
                 <label class="full-width">
@@ -81,15 +101,60 @@
     </section>
 
     <section class="panel">
-        <div class="list-header">
-            <h2>فهرست پیگیری‌ها</h2>
-            <button type="button" id="refreshButton" class="secondary-button">
-                بروزرسانی فهرست
-            </button>
+<div class="list-header">
+    <h2>فهرست پیگیری‌ها</h2>
+    <div class="pagination-controls">
+        <button type="button" id="prevPage" disabled>
+            صفحه قبل
+        </button>
+
+        <span id="pageInfo">صفحه ۱</span>
+
+        <button type="button" id="nextPage">
+            صفحه بعد
+        </button>
+    </div>
+
+<div id="filterModal" class="filter-modal" hidden>
+    <div class="filter-modal-content" dir="rtl">
+        <h3>فیلتر پیگیری‌ها</h3>
+        <label for="filterTitle">عنوان پیگیری</label>
+        <input
+            type="text"
+            id="filterTitle"
+        >
+        <label for="filterPriority">اولویت</label>
+        <select id="filterPriority">
+            <option value="">همه اولویت‌ها</option>
+            <option value="low">کم</option>
+            <option value="normal">عادی</option>
+            <option value="high">زیاد</option>
+        </select>
+
+        <label for="filterStatus">وضعیت</label>
+        <select id="filterStatus">
+            <option value="">همه وضعیت‌ها</option>
+            <option value="open">باز</option>
+            <option value="completed">تکمیل‌شده</option>
+        </select>
+
+        <div class="filter-modal-actions">
+            <button type="button" id="applyFilters">اعمال فیلتر</button>
+            <button type="button" id="clearFilters">پاک کردن فیلترها</button>
+            <button type="button" id="closeFilterButton">بستن</button>
         </div>
+    </div>
+</div>
 
+
+    <button type="button" id="refreshButton" class="secondary-button">
+        بروزرسانی فهرست
+    </button>
+    <button type="button" id="openFilterButton" class="secondary-button">
+    فیلتر
+</button>
+</div>
         <div id="listMessage" role="status">در حال آماده‌سازی فهرست...</div>
-
         <div class="table-wrapper">
             <table>
                 <thead>

@@ -19,6 +19,15 @@ final class FollowupService
     public function list(array $user, array $query): array
     {
         $filters = array();
+        if (isset($query['title']) && trim($query['title']) !== '') {
+    $title = trim($query['title']);
+
+    if (mb_strlen($title) > 200) {
+        throw new HttpException(422, 'Title filter cannot exceed 200 characters.');
+    }
+
+    $filters['title'] = $title;
+}
 
         if (isset($query['customer_id']) && $query['customer_id'] !== '') {
             $filters['customer_id'] = $this->positiveInteger(
