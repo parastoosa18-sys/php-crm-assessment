@@ -106,12 +106,10 @@ final class FollowupModel
 
         return array(
             'data' => $statement->fetchAll(),
-            'pagination' => array(
-                'total' => $total,
-                'limit' => $limit,
-                'offset' => $offset
-            )
-        );
+       'pagination' => array(
+    'total' => $total,
+    'limit' => max(1, min(100, $limit)),
+    'offset' => max(0, $offset)));
     }
 
     public function findVisible(int $id, array $user): ?array
